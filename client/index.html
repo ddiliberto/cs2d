@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CS2D - Top-Down Counter-Strike</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+canvas { display: block; }
+#ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+#hud {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-family: 'Courier New', monospace;
+  color: #fff;
+  font-size: 12px;
+}
+#hud div {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+#round-info {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Courier New', monospace;
+  color: #fff;
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 14px;
+  border-radius: 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+#killfeed {
+  position: absolute;
+  top: 56px;
+  right: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  text-align: right;
+}
+#killfeed .t-kill { color: #f94; }
+#killfeed .ct-kill { color: #4af; }
+#minimap {
+  position: absolute;
+  bottom: 150px;
+  right: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.4);
+}
+#center-msg {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Courier New', monospace;
+  color: #fff;
+  font-size: 18px;
+  background: rgba(0, 0, 0, 0.75);
+  padding: 16px 28px;
+  border-radius: 8px;
+  text-align: center;
+  display: none;
+  pointer-events: auto;
+}
+#center-msg .sub {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 6px;
+}
+#center-msg .win { color: #4f4; }
+#center-msg .lose { color: #f44; }
+#buy-menu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Courier New', monospace;
+  color: #fff;
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 16px 20px;
+  border-radius: 8px;
+  display: none;
+  pointer-events: auto;
+  min-width: 260px;
+  z-index: 20;
+}
+#buy-menu h3 {
+  margin-bottom: 10px;
+  font-size: 14px;
+  text-align: center;
+}
+#buy-menu .money {
+  color: #4f4;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.buy-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  margin: 4px 0;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.buy-item:active { background: rgba(255, 255, 255, 0.2); }
+.buy-item.owned { opacity: 0.4; }
+.buy-item .price {
+  color: #4f4;
+  font-size: 11px;
+}
+.buy-item .cant {
+  color: #f44;
+  font-size: 11px;
+}
+#buy-close {
+  display: block;
+  margin: 10px auto 0;
+  padding: 6px 20px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  cursor: pointer;
+}
+#bomb-action {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Courier New', monospace;
+  color: #fff;
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 24px;
+  border-radius: 8px;
+  display: none;
+  pointer-events: auto;
+  text-align: center;
+}
+#bomb-action .bar {
+  width: 200px;
+  height: 6px;
+  background: #333;
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+#bomb-action .bar-fill {
+  height: 100%;
+  background: #f90;
+  width: 0%;
+  border-radius: 3px;
+}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="ui">
+  <div id="hud">
+    <div id="health">HP: 100</div>
+    <div id="ammo">Glock | 20/40</div>
+  </div>
+  <div id="round-info">Round 1</div>
+  <div id="killfeed"></div>
+  <canvas id="minimap" width="120" height="90"></canvas>
+  <div id="center-msg"></div>
+  <div id="buy-menu">
+    <h3>BUY WEAPONS</h3>
+    <div class="money" id="buy-money">$800</div>
+    <div id="buy-items"></div>
+    <button id="buy-close">CLOSE</button>
+  </div>
+  <div id="bomb-action">
+    <div id="bomb-action-text">HOLD TO PLANT</div>
+    <div class="bar">
+      <div class="bar-fill" id="bomb-bar"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { startGame } from './game/main.js';
+  startGame();
+</script>
+</body>
+</html>

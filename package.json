@@ -1,0 +1,17 @@
+{
+  "name": "cs2d",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Browser-based, mobile-first top-down Counter-Strike clone",
+  "scripts": {
+    "dev": "vite client",
+    "build": "vite build client",
+    "preview": "vite preview client"
+  },
+  "keywords": ["game", "counter-strike", "canvas", "mobile"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
